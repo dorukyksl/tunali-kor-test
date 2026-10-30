@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Tunalı Drone Kör Testi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..100,500..800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Düzen: tek sütun akış; üstte talimat ve kaynak fotoğraf, altında videoların kartları, en altta gönderme. */
+:root {
+  --bg: #f3f5f6;
+  --surface: #ffffff;
+  --fg: #17212b;
+  --muted: #5b6874;
+  --line: #d9dfe4;
+  --accent: #0c6a86;
+  --accent-ink: #ffffff;
+  --chosen: #0c6a86;
+  --ok: #2f7a4f;
+  --font-display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11171c; --surface: #19222a; --fg: #e6ecf0; --muted: #9aa8b3; --line: #2b3741;
+    --accent: #5cb8d4; --accent-ink: #0b1418; --chosen: #5cb8d4; --ok: #6fc293; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11171c; --surface: #19222a; --fg: #e6ecf0; --muted: #9aa8b3; --line: #2b3741;
+  --accent: #5cb8d4; --accent-ink: #0b1418; --chosen: #5cb8d4; --ok: #6fc293; color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.55;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 64px;
+}
+.wrap { max-width: 760px; margin: 0 auto; display: grid; gap: 28px; }
+
+header { display: grid; gap: 12px; }
+.eyebrow { font-family: var(--font-mono); font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+h1 { font-family: var(--font-display); font-stretch: 80%; font-weight: 800; font-size: clamp(28px, 6vw, 40px); line-height: 1.05; margin: 0; text-wrap: balance; }
+.lead { margin: 0; max-width: 62ch; color: var(--fg); }
+.steps { margin: 0; padding-left: 20px; display: grid; gap: 4px; color: var(--muted); max-width: 62ch; }
+
+.source { display: grid; gap: 8px; }
+.source img { width: 100%; border-radius: 6px; display: block; border: 1px solid var(--line); }
+.caption { font-size: 12px; color: var(--muted); }
+
+.rater { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.rater label { font-weight: 600; }
+input[type="text"] {
+  font: inherit; color: var(--fg); background: var(--surface); border: 1px solid var(--line);
+  border-radius: 6px; padding: 8px 10px; min-width: 0; flex: 1 1 220px;
+}
+input[type="text"]:focus-visible, button:focus-visible, video:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.progress { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg); padding-block: 10px; display: grid; gap: 6px; border-bottom: 1px solid var(--line); }
+.progress-row { display: flex; justify-content: space-between; font-size: 13px; font-variant-numeric: tabular-nums; }
+.bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+.bar > span { display: block; height: 100%; width: 0; background: var(--accent); transition: width .25s ease; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+
+.list { display: grid; gap: 22px; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 14px; }
+.card-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.card-title { font-family: var(--font-display); font-stretch: 85%; font-weight: 700; font-size: 22px; margin: 0; }
+.state { font-size: 12px; color: var(--muted); }
+.state.done { color: var(--ok); font-weight: 600; }
+video { width: 100%; max-height: 70vh; background: #000; border-radius: 4px; display: block; }
+
+.q { display: grid; gap: 6px; }
+.q-label { font-weight: 600; font-size: 14px; }
+.q-hint { font-size: 12px; color: var(--muted); }
+.scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+.choices { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.opt {
+  font: inherit; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--fg); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 6px; padding: 9px 0; cursor: pointer;
+}
+.opt[aria-pressed="true"] { background: var(--chosen); color: var(--accent-ink); border-color: var(--chosen); }
+.scale-ends { display: flex; justify-content: space-between; font-size: 11px; color: var(--muted); }
+
+.send { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 16px; display: grid; gap: 12px; }
+.send h2 { font-family: var(--font-display); font-stretch: 85%; font-size: 22px; margin: 0; }
+.send p { margin: 0; color: var(--muted); max-width: 62ch; }
+.code { font-family: var(--font-mono); font-size: 12px; background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; overflow-wrap: anywhere; user-select: all; }
+.btn { font: inherit; font-weight: 600; background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 6px; padding: 10px 16px; cursor: pointer; justify-self: start; text-decoration: none; display: inline-block; }
+.btn-quiet { background: var(--bg); color: var(--fg); border: 1px solid var(--line); }
+.send-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+
+@media (prefers-reduced-motion: reduce) { .bar > span { transition: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Faz 0 · Kör test · Tunalı Hilmi Caddesi</div>
+    <h1>Hangisi gerçek bir drone çekimi gibi?</h1>
+    <p class="lead">Aşağıdaki videoların hepsi aynı fotoğraftan, farklı yöntemlerle üretildi. Hangisinin hangi yöntem olduğunu bilmiyorsun; sıralama da her açılışta karışık. Her videoyu izle ve üç soruyu cevapla.</p>
+    <ol class="steps">
+      <li>Videoyu sonuna kadar izle; istersen tekrar oynat.</li>
+      <li>Kaynak fotoğrafla karşılaştır: bina, tabelalar ve sokak aynı mı kalmış?</li>
+      <li>Bitince en alttaki "WhatsApp'ta gönder" düğmesine bas ve kodu bana gönder.</li>
+    </ol>
+  </header>
+
+  <section class="source" aria-label="Kaynak fotoğraf">
+    <img id="sourceImg" alt="Tunalı Hilmi Caddesi, sokak seviyesinden. Solda beyaz, altı katlı, cumbalı apartman." src="">
+    <div class="caption">Kaynak fotoğraf. Fotoğraf: Kayra, Wikimedia Commons, CC BY 4.0. Kişiler ve plakalar gizlilik için kaldırıldı.</div>
+  </section>
+
+  <div class="rater">
+    <label for="raterName">Adın</label>
+    <input type="text" id="raterName" placeholder="İsteğe bağlı, sonuç kodunda görünür" autocomplete="name">
+  </div>
+
+  <div class="progress" aria-live="polite">
+    <div class="progress-row"><span>İlerleme</span><span id="progressText">0 / 0 video</span></div>
+    <div class="bar"><span id="progressBar"></span></div>
+  </div>
+
+  <div class="list" id="list"></div>
+
+  <section class="send" aria-labelledby="sendTitle">
+    <h2 id="sendTitle">Sonucu gönder</h2>
+    <p id="sendHelp">Bitince "WhatsApp'ta gönder"e bas ve kodu bana gönder. Kodda sadece verdiğin puanlar var.</p>
+    <div class="code" id="resultCode" tabindex="0"></div>
+    <div class="send-actions">
+      <a class="btn" id="waBtn" href="#" target="_blank" rel="noopener">WhatsApp'ta gönder</a>
+      <button class="btn btn-quiet" id="copyBtn" type="button">Kodu kopyala</button>
+    </div>
+  </section>
+
+</div>
+
+<script>
+// Videolar yalnızca anlamsız kimliklerle durur; hangi kimliğin hangi yöntem olduğu sayfada yoktur.
+const SOURCE_IMAGE = "medya/kaynak.jpg";
+const VIDEOS = [
+  { id: "v1", src: "medya/v1.mp4" },
+  { id: "v2", src: "medya/v2.mp4" },
+  { id: "v3", src: "medya/v3.mp4" },
+  { id: "v4", src: "medya/v4.mp4" },
+  { id: "v5", src: "medya/v5.mp4" },
+  { id: "v6", src: "medya/v6.mp4" },
+  { id: "v7", src: "medya/v7.mp4" },
+  { id: "v8", src: "medya/v8.mp4" },
+  { id: "v9", src: "medya/v9.mp4" },
+  { id: "v10", src: "medya/v10.mp4" },
+  { id: "v11", src: "medya/v11.mp4" },
+];
+const LETTERS = "ABCDEFGHIJKLMNOP";
+const SHARE = [ ["E", "Evet"], ["B", "Belki"], ["H", "Hayır"] ];
+const DRAFT_KEY = "tunali-kor-test-taslak";
+
+const state = { name: "", ratings: {} }; // ratings[videoId] = { g, t, p }
+
+function loadDraft() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(DRAFT_KEY) || "null");
+    if (saved && typeof saved === "object") Object.assign(state, saved);
+  } catch {}
+}
+function saveDraft() {
+  try { localStorage.setItem(DRAFT_KEY, JSON.stringify(state)); } catch {}
+}
+
+function shuffled(items) {
+  const a = items.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+const isComplete = (r) => r && r.g && r.t && r.p;
+
+function resultCode() {
+  const parts = VIDEOS.filter((v) => isComplete(state.ratings[v.id])).map((v) => {
+    const r = state.ratings[v.id];
+    return `${v.id}:${r.g}${r.t}${r.p}`;
+  });
+  const name = state.name.trim().replace(/[|;]/g, " ") || "isimsiz";
+  return `TUNALI-KT1|${name}|${parts.join(";") || "-"}`;
+}
+
+function renderSummary() {
+  const done = VIDEOS.filter((v) => isComplete(state.ratings[v.id])).length;
+  document.getElementById("progressText").textContent = `${done} / ${VIDEOS.length} video`;
+  document.getElementById("progressBar").style.width = `${(done / VIDEOS.length) * 100}%`;
+  const code = resultCode();
+  document.getElementById("resultCode").textContent = code;
+  document.getElementById("waBtn").href = `https://wa.me/?text=${encodeURIComponent(code)}`;
+}
+
+function scaleQuestion(card, video, key, label, hint, low, high) {
+  const wrap = document.createElement("div");
+  wrap.className = "q";
+  const id = `q-${video.id}-${key}`;
+  wrap.innerHTML = `<div class="q-label" id="${id}"></div><div class="q-hint"></div><div class="scale" role="group"></div><div class="scale-ends"><span></span><span></span></div>`;
+  wrap.querySelector(".q-label").textContent = label;
+  wrap.querySelector(".q-hint").textContent = hint;
+  wrap.querySelector(".scale").setAttribute("aria-labelledby", id);
+  const ends = wrap.querySelectorAll(".scale-ends span");
+  ends[0].textContent = low;
+  ends[1].textContent = high;
+  const group = wrap.querySelector(".scale");
+  for (let n = 1; n <= 5; n++) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opt";
+    b.id = `${id}-${n}`;
+    b.textContent = String(n);
+    b.setAttribute("aria-pressed", String(state.ratings[video.id]?.[key] === n));
+    b.addEventListener("click", () => choose(video.id, key, n, group, b, card));
+    group.append(b);
+  }
+  return wrap;
+}
+
+function shareQuestion(card, video) {
+  const wrap = document.createElement("div");
+  wrap.className = "q";
+  const id = `q-${video.id}-p`;
+  wrap.innerHTML = `<div class="q-label" id="${id}">Bu videoyu ilanında paylaşır mıydın?</div><div class="choices" role="group"></div>`;
+  const group = wrap.querySelector(".choices");
+  group.setAttribute("aria-labelledby", id);
+  for (const [value, text] of SHARE) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "opt";
+    b.id = `${id}-${value}`;
+    b.textContent = text;
+    b.setAttribute("aria-pressed", String(state.ratings[video.id]?.p === value));
+    b.addEventListener("click", () => choose(video.id, "p", value, group, b, card));
+    group.append(b);
+  }
+  return wrap;
+}
+
+function updateCardState(card, videoId) {
+  const el = card.querySelector(".state");
+  const done = isComplete(state.ratings[videoId]);
+  el.textContent = done ? "Puanlandı" : "Bekliyor";
+  el.classList.toggle("done", Boolean(done));
+}
+
+function choose(videoId, key, value, group, button, card) {
+  state.ratings[videoId] = { ...(state.ratings[videoId] || {}), [key]: value };
+  for (const b of group.querySelectorAll(".opt")) b.setAttribute("aria-pressed", String(b === button));
+  updateCardState(card, videoId);
+  saveDraft();
+  renderSummary();
+}
+
+function renderList() {
+  const list = document.getElementById("list");
+  list.replaceChildren();
+  shuffled(VIDEOS).forEach((video, i) => {
+    const card = document.createElement("article");
+    card.className = "card";
+    card.innerHTML = `<div class="card-head"><h3 class="card-title"></h3><span class="state"></span></div>`;
+    card.querySelector(".card-title").textContent = `Video ${LETTERS[i]}`;
+    const v = document.createElement("video");
+    v.src = video.src;
+    v.controls = true;
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    v.preload = "metadata";
+    v.setAttribute("aria-label", `Video ${LETTERS[i]}`);
+    card.append(v);
+    card.append(
+      scaleQuestion(card, video, "g", "Gerçek bir drone çekimi gibi görünüyor mu?", "Kamera hareketi, ışık, netlik.", "1 · Hiç değil", "5 · Tamamen"),
+      scaleQuestion(card, video, "t", "Bina ve sokak tutarlı mı?", "Kaynak fotoğrafa göre: bina şekil değiştiriyor mu, olmayan şeyler beliriyor mu, görüntü titriyor mu?", "1 · Çok bozuk", "5 · Kusursuz"),
+      shareQuestion(card, video),
+    );
+    updateCardState(card, video.id);
+    list.append(card);
+  });
+}
+
+// ---- Başlangıç ----
+loadDraft();
+document.getElementById("sourceImg").src = SOURCE_IMAGE;
+const nameInput = document.getElementById("raterName");
+nameInput.value = state.name;
+nameInput.addEventListener("input", () => {
+  state.name = nameInput.value;
+  saveDraft();
+  renderSummary();
+});
+document.getElementById("copyBtn").addEventListener("click", async () => {
+  const code = resultCode();
+  const btn = document.getElementById("copyBtn");
+  try {
+    await navigator.clipboard.writeText(code);
+    btn.textContent = "Kopyalandı";
+  } catch {
+    const range = document.createRange();
+    range.selectNodeContents(document.getElementById("resultCode"));
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+    btn.textContent = "Kod seçildi, kopyala";
+  }
+  setTimeout(() => { btn.textContent = "Kodu kopyala"; }, 2500);
+});
+renderList();
+renderSummary();
+</script>
+</body>
+</html>
